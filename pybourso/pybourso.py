@@ -152,5 +152,5 @@ if __name__ == '__main__':
             print '  Name/ISIN: %s / %s' % (e['nom'], e['isin'])
             print '  Value:     %.2f' % e['cours']
             print '  Variation: %.2f' % e['variation']
-            print e
+            #print e
 
