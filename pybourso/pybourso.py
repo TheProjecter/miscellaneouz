@@ -10,17 +10,8 @@ In fine, se comporte comme une API:
     r = pybourso.get_stock('CAC')
     print r['cours']
 
-Le dictinnaire renvoye par get_stock() contient les cles suivantes:
-
-    indice
-    isin
-    nom
-    cours
-    variation
-    volume
-    ouverture
-    plushaut
-    plusbas
+Pour la liste des valeurs renvoyees par get_stock(), voir plus bas dans le
+source.
 
 Pour un apercu rapide, il y a un main() dans ce script.
 
@@ -119,15 +110,25 @@ def get_stock(code, debug=False):
 
     # associate 
     e = {
-        'indice':       is_indice,
         'isin':         isin,
+
+        # French names
         'nom':          name,
         'cours':        results[0],
         'variation':    results[1],
         'volume':       results[2],
         'ouverture':    results[3],
         'plushaut':     results[4],
-        'plusbas':      results[5]
+        'plusbas':      results[5],
+
+        # English names
+        'name':         name,
+        'value':        results[0],
+        'variation':    results[1],
+        'volume':       results[2],
+        'opening':      results[3],
+        'highval':      results[4],
+        'lowval':       results[5],
     }
 
     # done
@@ -148,7 +149,8 @@ if __name__ == '__main__':
         if not e:
             print '  Error, could not get stock "%s"...' % code
         else:
-            print '  Nom/ISIN:  %s / %s' % (e['nom'], e['isin'])
-            print '  Cours:     %.2f' % e['cours']
+            print '  Name/ISIN: %s / %s' % (e['nom'], e['isin'])
+            print '  Value:     %.2f' % e['cours']
             print '  Variation: %.2f' % e['variation']
+            print e
 
