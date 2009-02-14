@@ -4,9 +4,9 @@
 # Velib classiques afin de collecter un maximum de bonus sans (trop)
 # se fatiguer.
 #
-# Actuellement (Fervrier 2009), le meilleur choix est clairement de se
-# rendre a la station 09018 (Place Pigalle) et de ramener le velib a la
-# station V+ 09019 (Victor Masse).
+# Actuellement (Fevrier 2009), le meilleur choix est clairement de se
+# rendre a la station 09019 (Victor Masse) et de ramener le velib a la
+# station V+ 09018 (Place Pigalle).
 #
 # Nicolas Falliere, 2008-2009
 #
@@ -76,6 +76,6 @@ for (base, lat0, lng0) in stations_bonus:
 
 # Print out best couples (V+ -> V)
 couples.sort(lambda x,y: cmp(x[2], y[2]))
-print 'Top 10 couples (Velib -> Velib+):'
+print 'Top 10 couples (Velib+ - Velib):'
 for (base, closest, mindist) in couples[:10]:
-    print '%s  ->  %s  (%f)' % (stations[base].ljust(40), stations[closest].ljust(40), mindist)
+    print '%s  -  %s  (%f)' % (stations[base].ljust(40), stations[closest].ljust(40), mindist)
