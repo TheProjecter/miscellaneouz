@@ -154,7 +154,7 @@ unsigned int lzss_decompress(unsigned char* in, unsigned int insize, unsigned ch
         if(!(flags & 1))
         {
             if(src >= srcmax)
-                goto error;
+                goto error; //error: should break?
 
             *dst++ = *src;
             src++;
@@ -164,7 +164,7 @@ unsigned int lzss_decompress(unsigned char* in, unsigned int insize, unsigned ch
             unsigned short v;
 
             if((src + 1) >= srcmax)
-                break;
+                break; //error: should goto error?
 
             v = *((unsigned short*)src);
             src += 2;
