@@ -8,7 +8,7 @@ In fine, se comporte comme une API:
 
     import pybourso
     r = pybourso.get_stock('CAC')
-    print r['cours']
+    print r['value']
 
 Pour la liste des valeurs renvoyees par get_stock(), voir plus bas dans le
 source.
@@ -90,9 +90,11 @@ def get_stock(code, debug=False):
     if i1 < 0:
         return None
     c = b[i0:i1].replace('\n', '').replace('\r', '')
+    #print c
 
     # extract elements
-    m = re.match(r'.+?strong>(.+?)\(c\).+?([+-].+?)%.+?<li>.+?</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>', c)
+    #m = re.match(r'.+?strong>(.+?)\(c\).+?([+-].+?)%.+?<li>.+?</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>', c)
+    m = re.match(r'.+?strong>(.+?)</strong>.+?<li>.+?([+-].+?)%.+?</li>.+?<li>.+?</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>', c)
     if not m:
         return None
     r = m.groups()
@@ -101,7 +103,7 @@ def get_stock(code, debug=False):
     # convert string elements to real number values
     results = []
     for i in range(len(r)):
-        v = r[i].upper().replace(' ', '').replace('M', '000000').replace('K', '000').replace('\x80', '')
+        v = r[i].upper().replace(' ', '').replace('PTS', '').replace('(C)', '').replace('USD', '').replace('M', '000000').replace('K', '000').replace('\x80', '')
         if v.find('.') >= 0:
             v = float(v)
         else:
@@ -111,17 +113,6 @@ def get_stock(code, debug=False):
     # associate 
     e = {
         'isin':         isin,
-
-        # French names
-        'nom':          name,
-        'cours':        results[0],
-        'variation':    results[1],
-        'volume':       results[2],
-        'ouverture':    results[3],
-        'plushaut':     results[4],
-        'plusbas':      results[5],
-
-        # English names
         'name':         name,
         'value':        results[0],
         'variation':    results[1],
@@ -149,8 +140,8 @@ if __name__ == '__main__':
         if not e:
             print '  Error, could not get stock "%s"...' % code
         else:
-            print '  Name/ISIN: %s / %s' % (e['nom'], e['isin'])
-            print '  Value:     %.2f' % e['cours']
+            print '  Name/ISIN: %s / %s' % (e['name'], e['isin'])
+            print '  Value:     %.2f' % e['value']
             print '  Variation: %.2f' % e['variation']
             #print e
 
