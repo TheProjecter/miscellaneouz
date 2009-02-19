@@ -37,11 +37,7 @@ unsigned int lzss_compress(unsigned char* in, unsigned int insize, unsigned char
     dstmax = out + outmaxsize;
     sleft = insize;
 
-    //hdr = dst++;
-    //flags = 0;
-    //cnt = 0;
     goto start;
-
     while(sleft > 0)
     {
         // find longest match
@@ -111,8 +107,11 @@ start:
             cnt = 0;
         }
     }
+
     if(cnt)
         *hdr = flags;
+    else
+        dst--;
 
     outsize = (unsigned int)(dst - out);
     return outsize;
@@ -122,8 +121,34 @@ error:
 }
 
 
+int lzss_decompress_fast();
+
 unsigned int lzss_decompress(unsigned char* in, unsigned int insize, unsigned char* out, unsigned int outmaxsize)
 {
+#if 1
+    __asm {
+    //int     3
+    push    ebp
+    push    ebx
+    push    esi
+    push    edi
+
+    mov     edi, out
+    mov     esi, in
+    mov     eax, esi
+    add     eax, insize
+    mov     ebp, eax
+    call    lzss_decompress_fast
+
+    pop     edi
+    pop     esi
+    pop     ebx
+    pop     ebp
+
+    mov     outmaxsize, eax
+    }
+    return outmaxsize;
+#else
     unsigned char*  src;
     unsigned char*  srcmax;
     unsigned char*  dst;
@@ -145,16 +170,13 @@ unsigned int lzss_decompress(unsigned char* in, unsigned int insize, unsigned ch
     dst = out;
     dstmax = out + outmaxsize;
 
-    //flags = *src++;
-    //cnt = 0;
     goto start;
-
     while(dst < dstmax)
     {
         if(!(flags & 1))
         {
             if(src >= srcmax)
-                goto error; //error: should break?
+                break;
 
             *dst++ = *src;
             src++;
@@ -164,7 +186,7 @@ unsigned int lzss_decompress(unsigned char* in, unsigned int insize, unsigned ch
             unsigned short v;
 
             if((src + 1) >= srcmax)
-                break; //error: should goto error?
+                goto error;
 
             v = *((unsigned short*)src);
             src += 2;
@@ -202,4 +224,59 @@ start:
 
 error:
     return -1;
+#endif
+}
+
+
+__declspec(naked) int lzss_decompress_fast()
+{
+    __asm {
+    ;pushad
+    push    edi
+    cld
+
+getflags:
+    cmp     esi, ebp
+    jge     done
+    lodsb
+    mov     dl, al
+    mov     dh, 8
+
+decode:
+    shr     dl, 1
+    jc      offlen
+
+    cmp     esi, ebp
+    jge     done
+    movsb
+    jmp     next
+
+offlen:
+    xor     eax, eax
+    lodsw
+    ; length
+    mov     ecx, eax
+    and     ecx, 0Fh
+    add     ecx, 3
+    ; offset
+    mov     ebx, esi ;also try with push/pop esi
+    shr     eax, 4
+    not     eax
+    lea     esi, [edi+eax]
+    ; copy string
+    rep     movsb
+    mov     esi, ebx
+
+next:
+    dec     dh
+    jnz     decode
+    jmp     getflags
+
+done:
+    ;popad
+    pop     eax
+    sub     edi, eax
+    mov     eax, edi
+    ret
+    }
 }
