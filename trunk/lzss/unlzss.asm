@@ -1,3 +1,16 @@
+.586
+.model flat, stdcall
+option casemap :none
+
+
+  assume fs:nothing
+
+  .data
+
+  .code
+
+start:
+
 ; LZSS decompressor - pnf
 
     ; input:
@@ -12,13 +25,13 @@
 
 lzss_decompress:
     pushad
-    xor     eax, eax
+    cld
 
 getflags:
     cmp     esi, ebp
     jge     done
     lodsb
-    mov     dl, ah
+    mov     dl, al
     mov     dh, 8
 
 decode:
@@ -31,6 +44,7 @@ decode:
     jmp     next
 
 offlen:
+    xor     eax, eax
     lodsw
     ; length
     mov     ecx, eax
@@ -42,7 +56,7 @@ offlen:
     not     eax
     lea     esi, [edi+eax]
     ; copy string
-    repne   movsb
+    rep     movsb
     mov     esi, ebx
 
 next:
@@ -53,3 +67,5 @@ next:
 done:
     popad
     ret
+
+end start

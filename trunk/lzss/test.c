@@ -1,5 +1,6 @@
 #include "base.h"
 #include "lzss.h"
+#include "pefile.h"
 
 
 
@@ -68,7 +69,7 @@ error:
 }
 
 
-int main(int argc, char* argv[])
+int compression_test(void)
 {
     unsigned int    size, tsize, compsize, tcompsize;
     char**          filenames;
@@ -134,11 +135,10 @@ int main(int argc, char* argv[])
     char** corpus[] = {canterbury, artificial, large, misc, calgary, NULL};
 
 
-    if(0)
-    {
-        lzss_test(argv[1], &size, &compsize);
-        return 0;
-    }   
+#if 0
+    lzss_test(argv[1], &size, &compsize);
+    return 0;
+#endif
 
     filenames = corpus[4];
     tsize = 0;
@@ -159,6 +159,19 @@ int main(int argc, char* argv[])
     print("  Size:       %d bytes\n", tsize);
     print("  Compressed: %d bytes\n", tcompsize);
     print("  Ratio:      %d%%\n", (tcompsize * 100) / tsize);
+
+    return 0;
+}
+
+
+int main(int argc, char* argv[])
+{
+    PEFILE* pe;
+    char*   filename = argv[1];
+
+
+    pe = pefile_create(filename);
+    pefile_destroy(pe);
 
     return 0;
 }
