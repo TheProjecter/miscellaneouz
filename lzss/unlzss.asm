@@ -5,13 +5,14 @@
     ;   edi = output ptr (decompressed buffer)
     ;   ebp = end of input
     ; usage:
-    ;   dl  = flags
-    ;   dh  = count
+    ;   dl  = lzss flags
+    ;   dh  = lzss count
     ;   ecx = length
-    ;   ebx = offset
+    ;   ebx = tmp
 
 lzss_decompress:
     pushad
+    xor     eax, eax
 
 getflags:
     cmp     esi, ebp
@@ -31,20 +32,18 @@ decode:
 
 offlen:
     lodsw
-    ; offset
-    movzx   ebx, ax
-    shr     ebx, 4
-    inc     ebx
     ; length
-    movzx   ecx, ax
+    mov     ecx, eax
     and     ecx, 0Fh
     add     ecx, 3
+    ; offset
+    mov     ebx, esi ;also try with push/pop esi
+    shr     eax, 4
+    not     eax
+    lea     esi, [edi+eax]
     ; copy string
-    mov     eax, esi
-    mov     esi, edi
-    sub     esi, ebx
     repne   movsb
-    mov     esi, eax
+    mov     esi, ebx
 
 next:
     dec     dh
