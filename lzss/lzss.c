@@ -125,7 +125,7 @@ int lzss_decompress_fast();
 
 unsigned int lzss_decompress(unsigned char* in, unsigned int insize, unsigned char* out, unsigned int outmaxsize)
 {
-#if 1
+#if 0
     __asm {
     //int     3
     push    ebp
