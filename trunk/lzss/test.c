@@ -164,14 +164,38 @@ int compression_test(void)
 }
 
 
-int main(int argc, char* argv[])
+/*int main(int argc, char* argv[])
 {
-    PEFILE* pe;
-    char*   filename = argv[1];
+    FILEHANDLE* infile;
+    PEFILE*     pe;
+    char*       filename = argv[1];
+    RvaOffset*  promap;
+    int         i;
 
 
     pe = pefile_create(filename);
+    infile = file_open(filename);
+
+    s = pe->opthdr.SizeOfImage - sizepe->secthdr[0].VirtualAddress;
+    
+    for(i = 1, promap = &(pe->romaps[0]); i < pe->nb_romaps; i++, promap++)
+    {
+        if(promap->offset == (UINT32)-1)
+            continue;
+
+        address = pe->opthdr.ImageBase + promap->rva_start;
+        size = promap->rva_end - promap->rva_start;
+        buffer = memory_alloc(size);
+        file_read(infile, buffer, size);
+        buffer2 = memory_alloc(size);
+        size2 = lzss_compress(buffer, size, buffer2, size);
+
+        //buffer_append();
+    }
+
+// offset 28h: size of code, 
+
     pefile_destroy(pe);
 
     return 0;
-}
+}*/
