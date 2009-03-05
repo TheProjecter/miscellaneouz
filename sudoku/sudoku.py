@@ -4,19 +4,6 @@
 #
 
 
-def dump(a):
-    for i in xrange(81):
-        if len(a[i]) == 1:
-            print '%d' % a[i][0],
-        elif len(a[i]) == 0:
-            print 'x',
-        else:
-            print '-',
-        if (i+1) % 9 == 0:
-            print
-    print
-
-
 def simplify(a):
     mod = 0
     for i in xrange(0, 81, 9): # lines
@@ -43,7 +30,6 @@ def simplify(a):
     return mod
 
 
-import copy
 def solve(a):
     while simplify(a): pass
     (l, j) = (10, -1)
@@ -55,12 +41,25 @@ def solve(a):
     if j < 0:
         return a
     for i in xrange(l):
-        b = copy.deepcopy(a)
+        b = [x[:] for x in a] # deepcopy
         b[j] = a[j][i:i+1]
         r = solve(b)
         if r:
             return r
     return []
+
+
+def dump(a):
+    for i in xrange(81):
+        if len(a[i]) == 1:
+            print '%d' % a[i][0],
+        elif len(a[i]) == 0:
+            print 'x',
+        else:
+            print '-',
+        if (i+1) % 9 == 0:
+            print
+    print
 
 
 if __name__ == '__main__':
@@ -89,3 +88,4 @@ if __name__ == '__main__':
         c = ''.join(map(lambda x: '%s' % x[0], b))
         if c != s['solution']:
             print 'Error!'
+            break
