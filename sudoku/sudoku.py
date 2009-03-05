@@ -54,7 +54,7 @@ def solve(a):
             (l, j) = (len(a[i]), i)
     if j < 0:
         return a
-    for i in xrange(len(a[j])):
+    for i in xrange(l):
         b = copy.deepcopy(a)
         b[j] = a[j][i:i+1]
         r = solve(b)
