@@ -1,46 +1,61 @@
-"""#--------------------------------------------------------------------------
-==============================================================================
+"""
+Module: PYBOURSO
+Author: Nicolas Falliere
+Update: 19-Dec-2009
 
-pybourso.py -- Nicolas Falliere, feb.09
+Parses real-time stock quotes from boursorama.com.
 
-Recupere les cours de bourse sur Boursorama en parsant la page HTML.
-In fine, se comporte comme une API:
+You may use this module as a stock retriever API:
 
     import pybourso
-    r = pybourso.get_stock('CAC')
-    print r['value']
+    r = pybourso.get_stock('US9900751036') # NASDAQ Composite
+    print(r['value'])
 
-Pour la liste des valeurs renvoyees par get_stock(), voir plus bas dans le
-source.
+Overview of how to use: see the main() below.
 
-Pour un apercu rapide, il y a un main() dans ce script.
+Gotchas:
+- when the same ISIN points to different quotes.
+For example US2605661048 (DOW) could be DOW Insustrials or DJ Industrial.
+To resolve the conflict, use the raw code. For instance, for DJI:
+    e = get_stock('$INDU', raw=True, debug=True)
+The raw code can be found by visiting the webpage, in this case:
+    http://www.boursorama.com/cours.phtml?symbole=$INDU
+- use debug=True to dump the HTML page in case you need to hunt down a
+parser bug.
 
-Le script pourrait ne plus fonctionner s'ils decident de changer la
-structure de la page Web. Dans ce cas, reportez le bug 
+Todo:
+- allow customizable User-Agent
 
-==============================================================================
-#--------------------------------------------------------------------------"""
-
+Caution: the script might no longer work properly whenever
+Boursorama decides to change their HTML layout.
+"""
 
 import sys
 import urllib2
 import re
+import time
+import traceback
 
 
 
-def get_stock(code, debug=False):
+def get_stock(code, raw=False, trycount=3, debug=False):
 
-    # uppercase
-    code = code.upper()
+    is_isin = False
 
-    # ISIN or abbreviated code
-    is_isin = re.match(r'[A-Z]{2}[A-Z0-9]{10}', code) != None
-
-    # build the url
-    if is_isin:
+    if raw:
         url = 'http://www.boursorama.com/cours.phtml?symbole=%s' % code
+
     else:
-        url = 'http://www.boursorama.com/cours.phtml?symbole=1rP%s' % code
+        code = code.upper()
+
+        # ISIN or abbreviated code
+        is_isin = re.match(r'[A-Z]{2}[A-Z0-9]{10}', code) != None
+
+        # build the url
+        if is_isin:
+            url = 'http://www.boursorama.com/cours.phtml?symbole=%s' % code
+        else:
+            url = 'http://www.boursorama.com/cours.phtml?symbole=1rP%s' % code
 
     #url += '&vue=histo'
     #if when:
@@ -49,10 +64,18 @@ def get_stock(code, debug=False):
     #    url += '&date='+t
 
     # download the page
-    #print url
-    f = urllib2.urlopen(url)
-    b = f.read()
-    f.close()
+    while trycount:
+        try:
+            f = urllib2.urlopen(url)
+            b = f.read()
+            f.close()
+        except:
+            trycount -= 1
+            time.sleep(2)
+        else:
+            break
+    if not trycount:
+        return None
 
     # dump the downloaded Page
     if debug:
@@ -66,18 +89,18 @@ def get_stock(code, debug=False):
     if not m:
         return None
     name = m.groups()[0]
-    #print name
+    #print(name)
 
     # get the isin code
     if is_isin:
-        isin = code;
+        isin = code
     else:
         s = 'class="isin"'
         m = re.search(r'([A-Z]{2}[A-Z0-9]{10})-', b[b.find(s) + len(s):])
         if not m:
             return None
         isin = m.groups()[0]
-        #print isin
+        #print(isin)
 
     # indice or real stock
     is_indice = b.find('Composition</a>') >= 0
@@ -90,7 +113,7 @@ def get_stock(code, debug=False):
     if i1 < 0:
         return None
     c = b[i0:i1].replace('\n', '').replace('\r', '')
-    #print c
+    #print(c)
 
     # extract elements
     #m = re.match(r'.+?strong>(.+?)\(c\).+?([+-].+?)%.+?<li>.+?</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>.+?<li>(.+?)</li>', c)
@@ -98,12 +121,12 @@ def get_stock(code, debug=False):
     if not m:
         return None
     r = m.groups()
-    #print r
+    #print(r)
 
     # convert string elements to real number values
     results = []
     for i in range(len(r)):
-        v = r[i].upper().replace(' ', '').replace('PTS', '').replace('(C)', '').replace('USD', '').replace('M', '000000').replace('K', '000').replace('\x80', '')
+        v = r[i].upper().replace(' ', '').replace('PTS', '').replace('(C)', '').replace('EUR', '').replace('USD', '').replace('M', '000000').replace('K', '000').replace('\x80', '')
         if v.find('.') >= 0:
             v = float(v)
         else:
@@ -128,20 +151,24 @@ def get_stock(code, debug=False):
 
 
 #
-# Test!
+# Sample test
 #
 if __name__ == '__main__':
 
-    codelist = ['CAC', 'FP', 'FR0000031122', 'US38259P5089']
+    codelist = ['CAC', 'US38259P5089', 'FP', 'FR0000031122', 'JP3633400001',]
 
     for code in codelist:
-        print '%s' % code
-        e = get_stock(code, debug=False)
-        if not e:
-            print '  Error, could not get stock "%s"...' % code
-        else:
-            print '  Name/ISIN: %s / %s' % (e['name'], e['isin'])
-            print '  Value:     %.2f' % e['value']
-            print '  Variation: %.2f' % e['variation']
-            #print e
 
+        print ('%s' % code)
+        try:
+            e = get_stock(code, debug=False)
+        except:
+            e = None
+            traceback.print_exc()
+            
+        if not e:
+            print('  Error, could not get stock "%s"...' % code)
+        else:
+            print('  Name/ISIN: %s / %s' % (e['name'], e['isin']))
+            print('  Value:     %.2f' % e['value'])
+            print('  Variation: %.2f' % e['variation'])
