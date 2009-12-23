@@ -1,7 +1,7 @@
 """
 Module: PYBOURSO
 Author: Nicolas Falliere
-Update: 19-Dec-2009
+Update: 23-Dec-2009
 
 Parses real-time stock quotes from boursorama.com.
 
@@ -22,9 +22,8 @@ The raw code can be found by visiting the webpage, in this case:
     http://www.boursorama.com/cours.phtml?symbole=$INDU
 - use debug=True to dump the HTML page in case you need to hunt down a
 parser bug.
-
-Todo:
-- allow customizable User-Agent
+- customize the user-agent sent to the server with the 'useragent'
+optional paramter
 
 Caution: the script might no longer work properly whenever
 Boursorama decides to change their HTML layout.
@@ -38,7 +37,23 @@ import traceback
 
 
 
-def get_stock(code, raw=False, trycount=3, debug=False):
+
+def wget(url, useragent=''):
+
+    if useragent:
+        r = urllib2.Request(url, headers={'User-Agent': useragent})
+        f = urllib2.urlopen(r)
+
+    else:
+        f = urllib2.urlopen(url)
+
+    b = f.read()
+    f.close()
+    return b
+
+
+
+def get_stock(code, raw=False, trycount=3, useragent='', debug=False):
 
     is_isin = False
 
@@ -66,9 +81,7 @@ def get_stock(code, raw=False, trycount=3, debug=False):
     # download the page
     while trycount:
         try:
-            f = urllib2.urlopen(url)
-            b = f.read()
-            f.close()
+            b = wget(url, useragent)
         except:
             trycount -= 1
             time.sleep(2)
@@ -156,12 +169,13 @@ def get_stock(code, raw=False, trycount=3, debug=False):
 if __name__ == '__main__':
 
     codelist = ['CAC', 'US38259P5089', 'FP', 'FR0000031122', 'JP3633400001',]
+    #codelist = ['AF',]
 
     for code in codelist:
 
         print ('%s' % code)
         try:
-            e = get_stock(code, debug=False)
+            e = get_stock(code, useragent='Firefox/3.5.0', debug=False)
         except:
             e = None
             traceback.print_exc()
