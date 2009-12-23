@@ -171,4 +171,6 @@ if __name__ == '__main__':
         else:
             print('  Name/ISIN: %s / %s' % (e['name'], e['isin']))
             print('  Value:     %.2f' % e['value'])
-            print('  Variation: %.2f' % e['variation'])
+            print('  Variation: %.2f%%' % e['variation'])
+            print('  Volume:    %d' % e['volume'])
+            print('  T0,Lo,Hi:  %.2f, %.2f, %.2f' % (e['opening'], e['lowval'], e['highval']))
