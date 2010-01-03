@@ -1,7 +1,6 @@
 """
 Module: PYBOURSO
 Author: Nicolas Falliere
-Update: 23-Dec-2009
 
 Parses real-time stock quotes from boursorama.com.
 
@@ -11,22 +10,18 @@ You may use this module as a stock retriever API:
     r = pybourso.get_stock('US9900751036') # NASDAQ Composite
     print(r['value'])
 
-Overview of how to use: see the main() below.
+Demo script: see main() below.
+
+Caution: The script might no longer work properly if Boursorama decides to change their HTML layout.
 
 Gotchas:
-- when the same ISIN points to different quotes.
-For example US2605661048 (DOW) could be DOW Insustrials or DJ Industrial.
-To resolve the conflict, use the raw code. For instance, for DJI:
-    e = get_stock('$INDU', raw=True, debug=True)
-The raw code can be found by visiting the webpage, in this case:
+- If an ISIN points to different quotes (eg, US2605661048 could be DOW Insustrials or DJ Industrial), resolve the conflict by using the raw code:
+    e = get_stock('$INDU', raw=True)
+The 'raw code' of a stock can be found by visiting the webpage, in this case:
     http://www.boursorama.com/cours.phtml?symbole=$INDU
-- use debug=True to dump the HTML page in case you need to hunt down a
-parser bug.
-- customize the user-agent sent to the server with the 'useragent'
-optional paramter
+- Use 'debug=True' to dump the HTML page in case you want to hunt down a parser bug.
+- Customize the user-agent sent to the server with the 'useragent=X' optional paramter.
 
-Caution: the script might no longer work properly whenever
-Boursorama decides to change their HTML layout.
 """
 
 import sys
@@ -35,6 +30,8 @@ import re
 import time
 import traceback
 
+
+version = 0.1
 
 
 
@@ -164,12 +161,15 @@ def get_stock(code, raw=False, trycount=3, useragent='', debug=False):
 
 
 #
-# Sample test
+# Demo
 #
 if __name__ == '__main__':
 
-    codelist = ['CAC', 'US38259P5089', 'FP', 'FR0000031122', 'JP3633400001',]
-    #codelist = ['AF',]
+    if len(sys.argv) >= 2:
+        codelist = sys.argv[1:]
+    else:
+        codelist = ['CAC', 'US38259P5089', 'FP', 'FR0000031122', 'JP3633400001',]
+        #codelist = ['AF',]
 
     for code in codelist:
 
