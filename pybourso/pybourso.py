@@ -31,7 +31,7 @@ import time
 import traceback
 
 
-version = 0.1
+version = '0.1.1'
 
 
 
@@ -145,6 +145,7 @@ def get_stock(code, raw=False, trycount=3, useragent='', debug=False):
 
     # associate 
     e = {
+        'url':          url,
         'isin':         isin,
         'name':         name,
         'value':        results[0],
